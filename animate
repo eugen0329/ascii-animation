@@ -3,10 +3,13 @@
 require 'pry'
 require 'asciiart'
 
-# animation velocity in [fps]
+SELF_DIR = File.expand_path("../", __FILE__)
+# abs path to the script resources directory
+RES_DIR = "#{SELF_DIR}/res"
+# animation velocity in [fps]"
 ANIM_VELOCITY = 10.0
 
-frames = Dir["*.gif"].sort_by { |it| it.gsub(".gif", "").to_i  }.
+frames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }.
                       map { |it| AsciiArt.new("#{it}").to_ascii_art }
 
 3.times do |_|

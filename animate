@@ -16,8 +16,8 @@ def cache_is_outdated(filenames)
   cached_checksums = File.open("#{RES_DIR}/cache.info").collect { |line| line.chomp.split(/\s*<=>\s*/) }.to_h
 
   if cached_checksums.size == filenames.size
-    filenames.each do |fn|
-      return true if cached_checksums[fn] != Digest::MD5.hexdigest(File.open(fn).read)
+    filenames.each do |fname|
+      return true if cached_checksums[fname] != Digest::MD5.hexdigest(File.open(fname).read)
     end
     return false
   end
@@ -27,8 +27,8 @@ end
 
 def save_cache_info(filenames)
   File.open("#{RES_DIR}/cache.info", "w") do |file|
-    filenames.each do |name|
-      file.puts("#{name} <=> #{Digest::MD5.hexdigest(File.open(name).read)}") 
+    filenames.each do |fname|
+      file.puts("#{fname} <=> #{Digest::MD5.hexdigest(File.open(fname).read)}") 
     end
   end
 end

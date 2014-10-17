@@ -8,9 +8,26 @@ SELF_DIR = File.expand_path("../", __FILE__)
 RES_DIR = "#{SELF_DIR}/res"
 # animation velocity in [fps]"
 ANIM_VELOCITY = 10.0
+SPLITTER = "\n>>>>\n\n"
 
-frames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }.
-                      map { |it| AsciiArt.new("#{it}").to_ascii_art }
+
+def cache_is_outdated
+  File.open("#{RES_DIR}/cache.info").each do |line|
+    return true if line =~ /true/
+  end
+  return false
+end
+
+if cache_is_outdated
+  frames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }.
+                                   map { |it| AsciiArt.new("#{it}").to_ascii_art }
+  File.open("#{RES_DIR}/cache", "w") do |f|
+    frames.each { |frame| f.puts(frame, SPLITTER) }
+  end
+  binding.pry
+else
+  frames = File.open("#{RES_DIR}/cache").inject(:+).split(SPLITTER)
+end
 
 3.times do |_|
   frames.each do |frame| 

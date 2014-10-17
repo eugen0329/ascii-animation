@@ -2,29 +2,47 @@
 
 require 'pry'
 require 'asciiart'
+require 'digest/md5'
 
 SELF_DIR = File.expand_path("../", __FILE__)
 # abs path to the script resources directory
 RES_DIR = "#{SELF_DIR}/res"
 # animation velocity in [fps]"
 ANIM_VELOCITY = 10.0
+# splitter string in cache
 SPLITTER = "\n>>>>\n\n"
 
+def cache_is_outdated(filenames)
+  cached_checksums = File.open("#{RES_DIR}/cache.info").collect { |line| line.chomp.split(/\s*<=>\s*/) }.to_h
 
-def cache_is_outdated
-  File.open("#{RES_DIR}/cache.info").each do |line|
-    return true if line =~ /true/
+  if cached_checksums.size == filenames.size
+    filenames.each do |fn|
+      return true if cached_checksums[fn] != Digest::MD5.hexdigest(File.open(fn).read)
+    end
+    return false
   end
-  return false
+
+  return true
 end
 
-if cache_is_outdated
-  frames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }.
-                                   map { |it| AsciiArt.new("#{it}").to_ascii_art }
-  File.open("#{RES_DIR}/cache", "w") do |f|
-    frames.each { |frame| f.puts(frame, SPLITTER) }
+def save_cache_info(filenames)
+  File.open("#{RES_DIR}/cache.info", "w") do |file|
+    filenames.each do |name|
+      file.puts("#{name} <=> #{Digest::MD5.hexdigest(File.open(name).read)}") 
+    end
   end
-  binding.pry
+end
+
+
+filenames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }
+
+if cache_is_outdated(filenames)
+  puts "Wait until the cache is updated..."
+  save_cache_info(filenames)
+  frames = filenames.map { |it| AsciiArt.new("#{it}").to_ascii_art }
+  File.open("#{RES_DIR}/cache", "w") do |file|
+    frames.each { |frame| file.puts(frame, SPLITTER) }
+  end
 else
   frames = File.open("#{RES_DIR}/cache").inject(:+).split(SPLITTER)
 end

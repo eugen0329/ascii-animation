@@ -33,16 +33,20 @@ def save_cache_info(filenames)
   end
 end
 
+def save_cache(frames)
+  File.open("#{RES_DIR}/cache", "w") do |file|
+    frames.each { |frame| file.puts(frame, SPLITTER) }
+  end
+end
+
 
 filenames = Dir["#{RES_DIR}/*.gif"].sort_by { |it| File.basename(it, ".gif").to_i  }
 
 if cache_is_outdated(filenames)
-  puts "Wait until the cache is updated..."
+  puts "Please wait while the cache is updated..."
   save_cache_info(filenames)
   frames = filenames.map { |it| AsciiArt.new("#{it}").to_ascii_art }
-  File.open("#{RES_DIR}/cache", "w") do |file|
-    frames.each { |frame| file.puts(frame, SPLITTER) }
-  end
+  save_cache(frames)
 else
   frames = File.open("#{RES_DIR}/cache").inject(:+).split(SPLITTER)
 end
